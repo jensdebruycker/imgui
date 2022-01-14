@@ -7713,46 +7713,6 @@ static const char* GetInputSourceName(ImGuiInputSource source)
     return input_source_names[source];
 }
 
-#if 0
-static const char* GetInputEventTypeName(ImGuiInputEventType type)
-{
-    static const char* names[ImGuiInputEventType_COUNT] = { "None", "MousePos", "MouseWheel", "MouseButton", "Key", "KeyMods", "Char", "Focus" };
-    IM_ASSERT(type >= 0 && type < IM_ARRAYSIZE(names));
-    return names[type];
-}
-#endif
-
-static void DebugLogInputEvent(const ImGuiInputEvent* e)
-{
-    switch (e->Type)
-    {
-    case ImGuiInputEventType_MousePos:
-        IMGUI_DEBUG_LOG_IO("Event: MousePos (%.1f %.1f)\n", e->MousePos.PosX, e->MousePos.PosY);
-        break;
-    case ImGuiInputEventType_MouseButton:
-        IMGUI_DEBUG_LOG_IO("Event: MouseButton %d %s\n", e->MouseButton.Button, e->MouseButton.Down ? "Down" : "Up");
-        break;
-    case ImGuiInputEventType_MouseWheel:
-        IMGUI_DEBUG_LOG_IO("Event: MouseWheel (%.1f %.1f)\n", e->MouseWheel.WheelX, e->MouseWheel.WheelX);
-        break;
-    case ImGuiInputEventType_Key:
-        IMGUI_DEBUG_LOG_IO("Event: Key \"%s\" %s\n", ImGui::GetKeyName(e->Key.Key), e->Key.Down ? "Down" : "Up");
-        break;
-    case ImGuiInputEventType_KeyMods:
-        IMGUI_DEBUG_LOG_IO("Event: KeyMods Ctrl: %d, Shift: %d, Alt: %d, Super: %d\n", (e->KeyMods.Mods & ImGuiKeyModFlags_Ctrl) != 0, (e->KeyMods.Mods & ImGuiKeyModFlags_Shift) != 0, (e->KeyMods.Mods & ImGuiKeyModFlags_Alt) != 0, (e->KeyMods.Mods & ImGuiKeyModFlags_Super) != 0);
-        break;
-    case ImGuiInputEventType_Char:
-        IMGUI_DEBUG_LOG_IO("Event: Char: U+%08X (%c)\n", e->Text.Char, e->Text.Char);
-        break;
-    case ImGuiInputEventType_Focus:
-        IMGUI_DEBUG_LOG_IO("Event: AppFocused %d\n", e->AppFocused.Focused);
-        break;
-    case ImGuiInputEventType_None:
-    default:
-        break;
-    }
-}
-
 // Process input queue
 // - trickle_fast_inputs = false : process all events, turn into flattened input state (e.g. successive down/up/down/up will be lost)
 // - trickle_fast_inputs = true  : process as many events as possible (successive down/up/down/up will be trickled over several frames so nothing is lost) (new feature in 1.87)
@@ -7865,20 +7825,9 @@ void ImGui::UpdateInputEvents(bool trickle_fast_inputs)
 
     // Remaining events will be processed on the next frame
     if (event_n == g.InputEventsQueue.Size)
-    {
         g.InputEventsQueue.resize(0);
-    }
     else
-    {
-        IMGUI_DEBUG_LOG_IO("Processed inputs:\n");
-
-        for (int n = 0; n < event_n; n++)
-            DebugLogInputEvent(&g.InputEventsQueue[n]);
         g.InputEventsQueue.erase(g.InputEventsQueue.Data, g.InputEventsQueue.Data + event_n);
-        IMGUI_DEBUG_LOG_IO("Remaining inputs:\n");
-        for (int n = 0; n < g.InputEventsQueue.Size; n++)
-            DebugLogInputEvent(&g.InputEventsQueue[n]);
-    }
 
     // Clear buttons state when focus is lost
     // (this is useful so e.g. releasing Alt after focus loss on Alt-Tab doesn't trigger the Alt menu toggle)
